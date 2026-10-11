@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "ask": [
+      "mcp__robinhood-trading__place_equity_order",
+      "mcp__robinhood-trading__place_option_order",
+      "mcp__robinhood-trading__place_crypto_order",
+      "mcp__robinhood-trrading__place_equity_order",
+      "mcp__robinhood-trrading__place_option_order",
+      "mcp__robinhood-trrading__place_crypto_order"
+    ]
+  }
+}
