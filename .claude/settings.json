@@ -7,6 +7,12 @@
       "mcp__robinhood-trrading__place_equity_order",
       "mcp__robinhood-trrading__place_option_order",
       "mcp__robinhood-trrading__place_crypto_order"
+    ],
+    "deny": [
+      "mcp__robinhood-trading__place_crypto_order",
+      "mcp__robinhood-trading__exercise_option",
+      "mcp__robinhood-trrading__place_crypto_order",
+      "mcp__robinhood-trrading__exercise_option"
     ]
   }
 }
