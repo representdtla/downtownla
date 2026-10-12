@@ -6,7 +6,8 @@
 ## 룰 (에이전트가 정함)
 
 * 가상 자본: $500. 한 종목에 100%까지 넣을 수 있음 (소수점 가능).
-* 종목: SPY, QQQ, AAPL, MSFT, NVDA, AMZN, META, GOOGL, AMD, TSLA + 레버리지 ETF TQQQ, SOXL
+* 종목: SPY, QQQ, AAPL, MSFT, NVDA, AMZN, META, GOOGL, AMD, TSLA + 레버리지 ETF TQQQ, SOXL + 코인 BTC, ETH (`get_crypto_quotes` 시세)
+* 코인: 1포지션 최대 30%, 손절 −5%, 익절 +10%. 24시간 시장이지만 체크인 시간에만 진입·청산.
 * 진입: 10:00 ET 이후, 그날 가장 강한 종목(전일 대비 상승률 상위)이 VWAP 위에서 고점을 돌파할 때
 * 손절: −4%. 익절: +8%. +4% 도달 시 손절을 본전으로.
 * 하루 최대 3회 진입. 하루 −15% 손실 시 그날 중단.
