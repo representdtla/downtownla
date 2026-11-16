@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Korea Hotline</title>
+<style>
+  :root {
+    --bg: #f5f5f4; --card: #ffffff; --text: #1c1917; --muted: #78716c; --line: #e7e5e4;
+    --red: #dc2626; --red-dark: #b91c1c; --green: #16a34a; --amber: #d97706; --blue: #2563eb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0c0a09; --card: #1c1917; --text: #f5f5f4; --muted: #a8a29e; --line: #292524;
+      --red: #ef4444; --red-dark: #dc2626; --green: #22c55e; --amber: #f59e0b; --blue: #60a5fa;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 20px; font-size: 14px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px; margin-bottom: 16px; }
+  .card h2 { font-size: 15px; margin: 0 0 12px; color: var(--muted); font-weight: 600; }
+  label { display: block; font-size: 14px; color: var(--muted); margin: 10px 0 4px; }
+  input, textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px;
+    background: var(--bg); color: var(--text); font: inherit; }
+  textarea { min-height: 72px; resize: vertical; }
+  button { font: inherit; cursor: pointer; border-radius: 10px; border: 0; }
+  .btn { padding: 10px 16px; background: var(--text); color: var(--bg); }
+  .btn-ghost { padding: 8px 14px; background: transparent; color: var(--text); border: 1px solid var(--line); }
+  .panic { display: block; width: 100%; margin-top: 18px; padding: 26px 16px; background: var(--red); color: #fff;
+    font-size: 22px; font-weight: 700; letter-spacing: .02em; box-shadow: 0 6px 0 var(--red-dark); transition: transform .05s; }
+  .panic:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--red-dark); }
+  .panic:disabled { opacity: .5; cursor: not-allowed; }
+  .panic small { display: block; font-size: 14px; font-weight: 400; opacity: .9; }
+  ul.contacts { list-style: none; margin: 0; padding: 0; }
+  ul.contacts li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); }
+  ul.contacts li:first-child { border-top: 0; }
+  .muted { color: var(--muted); font-size: 14px; }
+  .banner { padding: 10px 12px; border-radius: 8px; background: color-mix(in srgb, var(--amber) 15%, transparent);
+    color: var(--text); font-size: 14px; margin-bottom: 16px; border: 1px solid color-mix(in srgb, var(--amber) 40%, transparent); }
+  .error { color: var(--red); font-size: 14px; margin-top: 8px; min-height: 1em; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  td, th { text-align: left; padding: 8px 4px; border-top: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 500; font-size: 13px; border-top: 0; }
+  .pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 13px; white-space: nowrap;
+    background: color-mix(in srgb, var(--muted) 18%, transparent); }
+  .pill.ok { background: color-mix(in srgb, var(--green) 20%, transparent); color: var(--green); font-weight: 600; }
+  .pill.live { background: color-mix(in srgb, var(--blue) 18%, transparent); color: var(--blue); }
+  .pill.wait { background: color-mix(in srgb, var(--amber) 20%, transparent); color: var(--amber); }
+  .pill.bad { background: color-mix(in srgb, var(--red) 15%, transparent); color: var(--red); }
+  .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .summary { font-size: 18px; font-weight: 600; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>🚨 Korea Emergency Hotline</h1>
+  <p class="sub">버튼을 누르면 한국 담당자 전원에게 전화가 걸립니다 · Press the button to call the on-call team in Korea</p>
+
+  <!-- PIN -->
+  <section id="login" class="card">
+    <h2>PIN 입력 · Enter PIN</h2>
+    <form id="loginForm" class="row">
+      <input id="pin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="PIN" style="flex:1;min-width:160px" required>
+      <button class="btn" type="submit">확인 · Unlock</button>
+    </form>
+    <div id="loginError" class="error"></div>
+  </section>
+
+  <section id="app" hidden>
+    <div id="dryBanner" class="banner" hidden>테스트 모드입니다. 실제 전화는 걸리지 않습니다 (Twilio 설정 전). · Test mode — no real calls.</div>
+
+    <div class="card">
+      <h2>비상 호출 · Emergency call</h2>
+      <label for="sender">호출자 이름 · Your name</label>
+      <input id="sender" maxlength="40" placeholder="예: John (LA office)">
+      <label for="message">전달할 내용 (전화로 읽어줍니다) · Message read aloud on the call</label>
+      <textarea id="message" maxlength="300">서버 장애가 발생했습니다. 즉시 확인 바랍니다.</textarea>
+      <button id="panic" class="panic" type="button">📞 한국 담당자 전원 호출<small>CALL KOREA ON-CALL TEAM</small></button>
+      <div id="alertError" class="error"></div>
+    </div>
+
+    <div id="statusCard" class="card" hidden>
+      <div class="row" style="margin-bottom:8px">
+        <div>
+          <div id="summary" class="summary"></div>
+          <div id="incidentMeta" class="muted"></div>
+        </div>
+        <button id="stopBtn" class="btn-ghost" type="button">호출 중지 · Stop</button>
+      </div>
+      <table>
+        <thead><tr><th>담당자</th><th>상태 · Status</th><th>시도</th></tr></thead>
+        <tbody id="callRows"></tbody>
+      </table>
+      <p class="muted" style="margin:12px 0 0">받은 사람이 1번을 누르면 "확인"으로 바뀝니다. 확인이 안 되면 자동으로 다시 겁니다.<br>Status turns to "Confirmed" when the person presses 1. Unconfirmed calls are retried automatically.</p>
+    </div>
+
+    <div class="card">
+      <h2>호출 대상 · Who will be called</h2>
+      <ul id="contacts" class="contacts"></ul>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  let pin = '';
+  let currentId = null;
+  let pollTimer = null;
+
+  try { pin = sessionStorage.getItem('hotline-pin') || ''; } catch {}
+
+  async function api(path, opts = {}) {
+    const res = await fetch(path, {
+      ...opts,
+      headers: { 'content-type': 'application/json', 'x-hotline-pin': pin, ...(opts.headers || {}) },
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { const e = new Error(data.error || `HTTP ${res.status}`); e.status = res.status; throw e; }
+    return data;
+  }
+
+  async function unlock() {
+    const cfg = await api('/api/config');
+    try { sessionStorage.setItem('hotline-pin', pin); } catch {}
+    $('login').hidden = true;
+    $('app').hidden = false;
+    $('dryBanner').hidden = !cfg.dryRun;
+    $('contacts').innerHTML = '';
+    for (const c of cfg.contacts) {
+      const li = document.createElement('li');
+      li.innerHTML = `<span><strong></strong> <span class="muted"></span></span><span class="muted"></span>`;
+      li.querySelector('strong').textContent = c.name;
+      li.querySelectorAll('.muted')[0].textContent = c.role || '';
+      li.querySelectorAll('.muted')[1].textContent = c.phone;
+      $('contacts').appendChild(li);
+    }
+    try { $('sender').value = localStorage.getItem('hotline-sender') || ''; } catch {}
+    const list = await api('/api/incidents');
+    const active = list.find((i) => !i.stopped && i.calls.some((c) => isActive(c)));
+    if (active) show(active);
+  }
+
+  $('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    pin = $('pin').value.trim();
+    $('loginError').textContent = '';
+    try { await unlock(); } catch (err) { $('loginError').textContent = err.message; }
+  });
+
+  const LABELS = {
+    pending:      ['대기', 'Pending', ''],
+    queued:       ['발신 중', 'Dialing', 'live'],
+    initiated:    ['발신 중', 'Dialing', 'live'],
+    ringing:      ['벨 울림', 'Ringing', 'live'],
+    'in-progress':['통화 중 (확인 대기)', 'On call', 'live'],
+    completed:    ['종료 (미확인)', 'Ended, not confirmed', 'wait'],
+    'retry-wait': ['재시도 대기', 'Retrying soon', 'wait'],
+    'no-answer':  ['안 받음', 'No answer', 'wait'],
+    busy:         ['통화 중', 'Busy', 'wait'],
+    failed:       ['발신 실패', 'Failed', 'bad'],
+    'gave-up':    ['❌ 연락 실패', 'Unreachable', 'bad'],
+    canceled:     ['중지됨', 'Stopped', ''],
+  };
+  const isActive = (c) => !c.acknowledged && !['gave-up', 'canceled'].includes(c.status);
+
+  function render(inc) {
+    const acked = inc.calls.filter((c) => c.acknowledged).length;
+    const total = inc.calls.length;
+    $('summary').textContent = acked > 0
+      ? `✅ ${acked}/${total}명 확인 · ${acked} of ${total} confirmed`
+      : (inc.stopped ? '호출 중지됨 · Stopped' : `📞 호출 중… 0/${total}명 확인 · Calling…`);
+    $('incidentMeta').textContent = `${new Date(inc.createdAt).toLocaleString()}${inc.sender ? ' · ' + inc.sender : ''} · "${inc.message}"`;
+    $('stopBtn').hidden = inc.stopped || !inc.calls.some(isActive);
+    const tbody = $('callRows');
+    tbody.innerHTML = '';
+    for (const c of inc.calls) {
+      const tr = document.createElement('tr');
+      const [ko, en, cls] = c.acknowledged
+        ? ['✅ 확인함', 'Confirmed ' + new Date(c.ackAt).toLocaleTimeString(), 'ok']
+        : (LABELS[c.status] || [c.status, '', '']);
+      tr.innerHTML = '<td><strong></strong><div class="muted"></div></td><td><span class="pill"></span><div class="muted"></div></td><td class="muted"></td>';
+      tr.querySelector('strong').textContent = c.name;
+      tr.querySelectorAll('.muted')[0].textContent = c.phone;
+      const pill = tr.querySelector('.pill');
+      pill.textContent = ko;
+      if (cls) pill.classList.add(cls);
+      tr.querySelectorAll('.muted')[1].textContent = en;
+      tr.querySelectorAll('.muted')[2].textContent = `${c.attempts}/${c.maxAttempts}`;
+      tbody.appendChild(tr);
+    }
+  }
+
+  function show(inc) {
+    currentId = inc.id;
+    $('statusCard').hidden = false;
+    render(inc);
+    clearInterval(pollTimer);
+    pollTimer = setInterval(async () => {
+      try {
+        const latest = await api(`/api/incidents/${currentId}`);
+        render(latest);
+        if (latest.stopped || !latest.calls.some(isActive)) clearInterval(pollTimer);
+      } catch {}
+    }, 2000);
+  }
+
+  $('panic').addEventListener('click', async () => {
+    if (!confirm('한국 담당자 전원에게 지금 전화를 겁니다. 계속할까요?\n\nCall the entire Korea on-call team now?')) return;
+    $('alertError').textContent = '';
+    $('panic').disabled = true;
+    try {
+      try { localStorage.setItem('hotline-sender', $('sender').value.trim()); } catch {}
+      const inc = await api('/api/alert', {
+        method: 'POST',
+        body: JSON.stringify({ sender: $('sender').value, message: $('message').value }),
+      });
+      show(inc);
+      $('statusCard').scrollIntoView({ behavior: 'smooth' });
+    } catch (err) {
+      $('alertError').textContent = err.message;
+    } finally {
+      setTimeout(() => { $('panic').disabled = false; }, 5000);
+    }
+  });
+
+  $('stopBtn').addEventListener('click', async () => {
+    if (!currentId || !confirm('남은 호출과 재시도를 모두 중지할까요?\n\nStop all remaining calls and retries?')) return;
+    try { render(await api(`/api/incidents/${currentId}/stop`, { method: 'POST' })); } catch (err) { alert(err.message); }
+  });
+
+  if (pin) unlock().catch(() => { pin = ''; try { sessionStorage.removeItem('hotline-pin'); } catch {} });
+})();
+</script>
+</body>
+</html>

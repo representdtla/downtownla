@@ -1,0 +1,17 @@
+{
+  "name": "korea-hotline",
+  "version": "1.0.0",
+  "description": "해외 오피스에서 버튼 하나로 한국 담당자들에게 비상 전화를 거는 핫라인",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "twilio": "^5.4.0"
+  }
+}
